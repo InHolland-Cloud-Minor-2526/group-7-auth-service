@@ -30,12 +30,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- JPA / Hibernate ORM + Panache -->
-        <dependency>
-            <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-hibernate-orm-panache</artifactId>
-        </dependency>
-     
         <!-- JSON support for REST -->
         <dependency>
             <groupId>io.quarkus</groupId>
@@ -61,10 +55,10 @@
             <artifactId>quarkus-junit5</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-jdbc-postgresql</artifactId>
-        </dependency>
+        </dependency> -->
 
         <dependency>
             <groupId>io.rest-assured</groupId>
