@@ -7,41 +7,31 @@ import jakarta.ws.rs.core.Response;
 
 import org.acme.auth.dto.LoginRequest;
 import org.acme.auth.dto.LoginResponse;
+import org.acme.auth.dto.UserDTO;
 import org.acme.auth.security.JwtUtil;
-import org.acme.auth.service.AuthService;
+import org.acme.auth.services.AuthService;
+
+import org.acme.entity.User;
 
 @Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
+    @Inject
+    JwtUtil jwtUtil;
 
     @Inject
     AuthService authService;
 
-    @Inject
-    JwtUtil jwtUtil;
-
     @POST
     @Path("/login")
     public Response login(LoginRequest request) {
-
-        // Validate input
-        if (request.email == null || request.password == null) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity("Email and password are required")
-                    .build();
-        }
-
-        // Authenticate user using email
-        boolean authenticated = authService.authenticate(
-                request.email,
-                request.password
-        );
-
-        // Send the notification if it's fail
-        if (!authenticated) {
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity("Invalid email or password")
+        try {
+            User user = authService.validateUser(request);
+        } catch (IllegalArgumentException e) {
+            return Response
+                    .status(Response.Status.UNAUTHORIZED)
+                    .entity(e.getMessage())
                     .build();
         }
 
@@ -50,7 +40,6 @@ public class AuthResource {
 
         // Return token + email
         return Response.ok(
-                new LoginResponse(token, request.email)
-        ).build();
+                new LoginResponse(token)).build();
     }
 }
