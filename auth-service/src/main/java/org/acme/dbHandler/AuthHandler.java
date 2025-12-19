@@ -4,6 +4,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
+import jakarta.transaction.Transactional;
 
 import org.acme.entity.User;
 
@@ -29,5 +30,24 @@ public class AuthHandler {
             System.out.println(e.getMessage());
             return null;
         }
+    }
+
+    public User findUserByEmail(String email) {
+    try {
+        return em.createQuery(
+                "SELECT u FROM User u WHERE u.email = :email",
+                User.class)
+                .setParameter("email", email)
+                .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
+    @Transactional
+    public void updatePasswordByEmail(String email, String newPassword) {
+        em.createQuery("UPDATE User u SET u.password = :password WHERE u.email = :email")
+            .setParameter("password", newPassword)
+            .setParameter("email", email)
+            .executeUpdate();
     }
 }

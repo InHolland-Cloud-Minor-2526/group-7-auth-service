@@ -28,4 +28,8 @@ public class AuthService {
         return user;
 
     }
+
+    public void updatePassword(String email, String newPassword) {
+        authHandler.updatePasswordByEmail(email, newPassword);
+    }
 }
