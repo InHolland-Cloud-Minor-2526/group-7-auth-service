@@ -8,26 +8,26 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.NoResultException;
 import jakarta.transaction.Transactional;
 
+import org.acme.entity.User;
+
 @ApplicationScoped
 public class AuthHandler {
 
     @Inject
     EntityManager em;
 
-    public User findUser(String email, String password) {
+    public Long findUser(String email, String password) {
         try {
-            User user = em.createQuery(
+            Long userId = em.createQuery(
                     "SELECT u FROM User u WHERE u.email = :email AND u.password = :password",
                     User.class)
                     .setParameter("email", email)
                     .setParameter("password", password)
-                    .getSingleResult();
+                    .getSingleResult().userId;
 
-            return user;
+            return userId;
 
         } catch (NoResultException e) {
-            // TODO do the normal exception handling
-            System.out.println(e.getMessage());
             return null;
         }
     }
@@ -53,4 +53,17 @@ public class AuthHandler {
         return user;
     }
 
+    public void updateToken(Long userId, String token) {
+        int updated = em.createQuery(
+                "UPDATE User u SET u.token = :token WHERE u.userId = :userId")
+                .setParameter("token", token)
+                .setParameter("userId", userId)
+                .executeUpdate();
+
+        System.out.println(updated);
+
+        if (updated == 0) {
+            throw new NoResultException("Error with login, try again please");
+        }
+    }
 }

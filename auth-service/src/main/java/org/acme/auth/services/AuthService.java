@@ -4,6 +4,7 @@ import org.acme.auth.dto.LoginRequest;
 import org.acme.auth.dto.RegistrationDTO;
 import org.acme.dbHandler.AuthHandler;
 import org.acme.entity.User;
+import org.acme.customExceptions.CustomAuthException;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -14,19 +15,26 @@ public class AuthService {
     @Inject
     AuthHandler authHandler;
 
-    public User validateUser(LoginRequest request) {
+    public Long validateUser(LoginRequest request) throws CustomAuthException {
         if (request.email == null || request.password == null) {
-            throw new IllegalArgumentException("Something is null");
+            throw new CustomAuthException("Password and Email should not be empty");
         }
 
-        User user = authHandler.findUser(request.email, request.password);
+        Long userId = authHandler.findUser(request.email, request.password);
 
-        if (user == null) {
-            throw new IllegalArgumentException("User was not found");
+        if (userId == null) {
+            throw new CustomAuthException("User was not found");
         }
 
-        return user;
+        return userId;
+    }
 
+    public void updateToken(Long userId, String token) throws CustomAuthException {
+        try {
+            authHandler.updateToken(userId, token);
+        } catch (Exception e) {
+            throw new CustomAuthException(e.getMessage());
+        }
     }
 
     public User createUser(RegistrationDTO registrationDTO) {
