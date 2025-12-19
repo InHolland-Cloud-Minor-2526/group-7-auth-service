@@ -1,22 +1,26 @@
 package org.acme.auth.resource;
 
-import jakarta.inject.Inject;
-import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-
 import org.acme.auth.dto.LoginRequest;
 import org.acme.auth.dto.LoginResponse;
-import org.acme.auth.dto.UserDTO;
+import org.acme.auth.dto.RegistrationDTO;
+import org.acme.auth.dto.RegistrationResponseDTO;
 import org.acme.auth.security.JwtUtil;
 import org.acme.auth.services.AuthService;
-
 import org.acme.entity.User;
+
+import jakarta.inject.Inject;
+import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.POST;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 
 @Path("/auth")
 @Consumes(MediaType.APPLICATION_JSON)
 @Produces(MediaType.APPLICATION_JSON)
 public class AuthResource {
+
     @Inject
     JwtUtil jwtUtil;
 
@@ -42,4 +46,23 @@ public class AuthResource {
         return Response.ok(
                 new LoginResponse(token)).build();
     }
+
+    @POST
+    @Path("/registration")
+    public Response registration(RegistrationDTO registrationDTO) {
+        try {
+            User user = authService.createUser(registrationDTO);
+            String token = jwtUtil.generateToken(user.email);
+
+            return Response.status(Response.Status.CREATED)
+                    .entity(new RegistrationResponseDTO(token))
+                    .build();
+
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(java.util.Map.of("error", e.getMessage()))
+                    .build();
+        }
+    }
+
 }

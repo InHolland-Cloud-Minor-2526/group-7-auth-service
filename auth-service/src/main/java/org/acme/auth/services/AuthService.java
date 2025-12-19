@@ -1,12 +1,12 @@
 package org.acme.auth.services;
 
-import jakarta.inject.Inject;
+import org.acme.auth.dto.LoginRequest;
+import org.acme.auth.dto.RegistrationDTO;
+import org.acme.dbHandler.AuthHandler;
+import org.acme.entity.User;
 
 import jakarta.enterprise.context.ApplicationScoped;
-import org.acme.auth.dto.LoginRequest;
-import org.acme.dbHandler.AuthHandler;
-
-import org.acme.entity.User;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class AuthService {
@@ -28,4 +28,19 @@ public class AuthService {
         return user;
 
     }
+
+    public User createUser(RegistrationDTO registrationDTO) {
+        if (registrationDTO.email == null || registrationDTO.password == null) {
+            throw new IllegalArgumentException("Please enter both email and password to register");
+        }
+
+        User user = authHandler.createUser(registrationDTO.email, registrationDTO.password);
+
+        if (user == null) {
+            throw new IllegalArgumentException("User creation failed"); 
+        }
+
+        return user;
+    }
+
 }
