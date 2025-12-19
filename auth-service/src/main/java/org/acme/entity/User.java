@@ -17,6 +17,6 @@ public class User {
     @Column(nullable = false)
     public String password;
 
-    @Column
+    @Column(length = 2048)
     public String token;
 }
