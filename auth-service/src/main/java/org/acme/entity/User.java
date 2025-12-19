@@ -1,6 +1,11 @@
 package org.acme.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
@@ -17,6 +22,6 @@ public class User {
     @Column(nullable = false)
     public String password;
 
-    @Column
+    @Column(columnDefinition = "TEXT") // Needed to store the longer JWT token format
     public String token;
 }
