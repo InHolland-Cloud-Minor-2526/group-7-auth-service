@@ -51,19 +51,18 @@ public class AuthResource {
     @POST
     @Path("/refresh")
     public Response refresh(RefreshTokenRequest request) {
-        User user;
+        // Validate the refresh token
         try {
-            user = authService.validateRefreshToken(request != null ? request.refreshToken : null);
+            User user = authService.validateRefreshToken(request != null ? request.refreshToken : null);
+            String token = jwtUtil.generateToken(user.email);
+            String refreshToken = authService.issueRefreshToken(user);
+
+            return Response.ok(new LoginResponse(token, refreshToken)).build();
         } catch (IllegalArgumentException e) {
             return Response
                     .status(Response.Status.UNAUTHORIZED)
                     .entity(e.getMessage())
                     .build();
         }
-
-        String token = jwtUtil.generateToken(user.email);
-        String refreshToken = authService.issueRefreshToken(user);
-
-        return Response.ok(new LoginResponse(token, refreshToken)).build();
     }
 }
