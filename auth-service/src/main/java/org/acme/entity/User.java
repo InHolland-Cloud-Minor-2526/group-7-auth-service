@@ -1,6 +1,11 @@
 package org.acme.entity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "users")
@@ -18,5 +23,8 @@ public class User {
     public String password;
 
     @Column(length = 2048)
-    public String token;
+    public String accessToken;
+
+    @Column(length = 2048)
+    public String refreshToken;
 }

@@ -55,19 +55,12 @@ public class AuthResource {
     @POST
     @Path("/registration")
     public Response registration(RegistrationDTO registrationDTO) {
-        try {
-            User user = authService.createUser(registrationDTO);
-            String token = jwtUtil.generateToken(user.email);
 
-            return Response.status(Response.Status.CREATED)
-                    .entity(new RegistrationResponseDTO(token))
-                    .build();
+        RegistrationResponseDTO tokens = authService.createUser(registrationDTO);
 
-        } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(java.util.Map.of("error", e.getMessage()))
-                    .build();
-        }
+        return Response.status(Response.Status.CREATED)
+                .entity(tokens)
+                .build();
     }
 
 }

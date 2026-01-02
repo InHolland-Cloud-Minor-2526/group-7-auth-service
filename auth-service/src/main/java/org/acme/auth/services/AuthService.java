@@ -2,9 +2,9 @@ package org.acme.auth.services;
 
 import org.acme.auth.dto.LoginRequest;
 import org.acme.auth.dto.RegistrationDTO;
-import org.acme.dbHandler.AuthHandler;
-import org.acme.entity.User;
+import org.acme.auth.dto.RegistrationResponseDTO;
 import org.acme.customExceptions.CustomAuthException;
+import org.acme.dbHandler.AuthHandler;
 
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -37,18 +37,8 @@ public class AuthService {
         }
     }
 
-    public User createUser(RegistrationDTO registrationDTO) {
-        if (registrationDTO.email == null || registrationDTO.password == null) {
-            throw new IllegalArgumentException("Please enter both email and password to register");
-        }
-
-        User user = authHandler.createUser(registrationDTO.email, registrationDTO.password);
-
-        if (user == null) {
-            throw new IllegalArgumentException("User creation failed"); 
-        }
-
-        return user;
+    public RegistrationResponseDTO createUser(RegistrationDTO registrationDTO) {
+        return authHandler.createUser(registrationDTO);
     }
 
 }
