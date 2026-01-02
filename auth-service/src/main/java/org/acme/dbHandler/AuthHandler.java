@@ -61,14 +61,8 @@ public class AuthHandler {
         String accessToken = jwtUtil.generateAccessToken(userId);
         String refreshToken = jwtUtil.generateRefreshToken(userId);
         insertTokens(user, accessToken, refreshToken);
-        var resp = userServiceClient.createDefaultProfile(userId);
-        System.out.println("Calling user-service /users/" + userId + " -> status=" + resp.getStatus());
-
-        if (resp.getStatus() >= 300) {
-            String body = resp.readEntity(String.class);
-            System.out.println("user-service error body: " + body);
-            throw new WebApplicationException("Failed to create default profile", 502);
-        }
+        userServiceClient.createDefaultProfile(userId);
+      
         return new RegistrationResponseDTO(accessToken, refreshToken);
 
     }
