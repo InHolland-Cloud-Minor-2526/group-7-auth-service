@@ -1,11 +1,11 @@
 package org.acme.auth.dto;
 
 public class LoginResponse {
-    public String token;
-    public Long user_id;
+    public String accessToken;
+    public String refreshToken;
 
-    public LoginResponse(String token, Long user_id) {
-        this.token = token;
-        this.user_id = user_id;
+    public LoginResponse(String accessToken, String refreshToken) {
+        this.accessToken = accessToken;
+        this.refreshToken = refreshToken;
     }
 }

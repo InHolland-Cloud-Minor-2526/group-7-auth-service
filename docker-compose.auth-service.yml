@@ -15,7 +15,7 @@ services:
     restart: unless-stopped
     networks:
       - enbition-net
-
+  
   auth-service:
     build:
       context: ./auth-service
@@ -33,6 +33,7 @@ services:
       QUARKUS_DATASOURCE_PASSWORD: "password"
       QUARKUS_DATASOURCE_JDBC_URL: "jdbc:postgresql://postgres:5432/auth_db"
       QUARKUS_HIBERNATE_ORM_DATABASE_GENERATION: "update"
+
     restart: unless-stopped
     networks:
       - enbition-net
@@ -42,4 +43,6 @@ volumes:
 
 networks:
   enbition-net:
-    external: true
+    name: enbition-net
+    driver: bridge
+
