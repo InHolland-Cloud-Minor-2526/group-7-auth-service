@@ -6,9 +6,6 @@ import org.acme.auth.dto.RegistrationDTO;
 import org.acme.auth.dto.RegistrationResponseDTO;
 import org.acme.auth.security.JwtUtil;
 import org.acme.auth.services.AuthService;
-import org.acme.entity.User;
-import org.acme.auth.security.JwtUtil;
-import org.acme.auth.services.AuthService;
 import org.acme.customExceptions.CustomAuthException;
 
 import jakarta.inject.Inject;
@@ -33,13 +30,15 @@ public class AuthResource {
     @POST
     @Path("/login")
     public Response login(LoginRequest request) {
-        Long userId;
-        String token;
-
         try {
-            userId = authService.validateUser(request);
-            token = jwtUtil.generateToken(userId);
-            authService.updateToken(userId, token);
+
+            Long userId = authService.validateUser(request);
+            String accessToken = jwtUtil.generateAccessToken(userId);
+            String refreshToken = jwtUtil.generateRefreshToken(userId);
+            authService.updateToken(userId, accessToken, refreshToken);
+            
+            return Response.ok(
+                new LoginResponse(accessToken, refreshToken)).build();
 
         } catch (CustomAuthException e) {
             return Response
@@ -48,8 +47,6 @@ public class AuthResource {
                     .build();
         }
 
-        return Response.ok(
-                new LoginResponse(token, userId)).build();
     }
 
     @POST

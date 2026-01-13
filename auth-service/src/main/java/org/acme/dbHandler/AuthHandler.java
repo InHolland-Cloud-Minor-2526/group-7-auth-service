@@ -3,9 +3,7 @@ package org.acme.dbHandler;
 import org.acme.auth.dto.RegistrationDTO;
 import org.acme.auth.dto.RegistrationResponseDTO;
 import org.acme.auth.security.JwtUtil;
-import org.acme.clients.UserServiceClient;
 import org.acme.entity.User;
-import org.eclipse.microprofile.rest.client.inject.RestClient;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -23,21 +21,14 @@ public class AuthHandler {
     @Inject
     JwtUtil jwtUtil;
 
-    @Inject
-    @RestClient
-    UserServiceClient userServiceClient;
-
-    public Long findUser(String email, String password) {
+    public User findUser(String email) {
         try {
-            Long userId = em.createQuery(
-                    "SELECT u FROM User u WHERE u.email = :email AND u.password = :password",
+            User user = em.createQuery(
+                    "SELECT u FROM User u WHERE u.email = :email",
                     User.class)
                     .setParameter("email", email)
-                    .setParameter("password", password)
-                    .getSingleResult().userId;
-
-            return userId;
-
+                    .getSingleResult();
+            return user;
         } catch (NoResultException e) {
             return null;
         }
@@ -60,10 +51,8 @@ public class AuthHandler {
 
         String accessToken = jwtUtil.generateAccessToken(userId);
         String refreshToken = jwtUtil.generateRefreshToken(userId);
-        insertTokens(user, accessToken, refreshToken);
-        userServiceClient.createDefaultProfile(userId);
-      
-        return new RegistrationResponseDTO(accessToken, refreshToken);
+        RegistrationResponseDTO response = insertTokens(user, accessToken, refreshToken);
+        return response;
 
     }
 
@@ -76,24 +65,40 @@ public class AuthHandler {
         return count > 0;
     }
 
-    private void insertTokens(User user, String accessToken, String refreshToken) {
+    private RegistrationResponseDTO insertTokens(User user, String accessToken, String refreshToken) {
         user.accessToken = BcryptUtil.bcryptHash(accessToken);
         user.refreshToken = BcryptUtil.bcryptHash(refreshToken);
         em.flush();
-
+        return new RegistrationResponseDTO(accessToken, refreshToken, user.userId);
     }
 
-    public void updateToken(Long userId, String token) {
+    @Transactional
+    public void updateToken(Long userId, String accessToken, String refreshToken) {
         int updated = em.createQuery(
-                "UPDATE User u SET u.token = :token WHERE u.userId = :userId")
-                .setParameter("token", token)
+                "UPDATE User u SET u.accessToken = :accessToken, u.refreshToken = :refreshToken WHERE u.userId = :userId")
+                .setParameter("accessToken", accessToken)
+                .setParameter("refreshToken", refreshToken)
                 .setParameter("userId", userId)
                 .executeUpdate();
 
-        System.out.println(updated);
-
         if (updated == 0) {
             throw new NoResultException("Error with login, try again please");
+        }
+    }
+
+    public String getNewAccessTokenWithRefreshToken(String refreshToken) {
+        try {
+            User user = em.createQuery(
+                    "SELECT u FROM User u WHERE u.refreshToken = :refreshToken",
+                    User.class)
+                    .setParameter("refreshToken", refreshToken)
+                    .getSingleResult();
+
+            String newAccessToken = jwtUtil.generateAccessToken(user.userId);
+            updateToken(user.userId, newAccessToken, refreshToken);
+            return newAccessToken;
+        } catch (NoResultException e) {
+            throw new WebApplicationException("Invalid refresh token", 401);
         }
     }
 }
