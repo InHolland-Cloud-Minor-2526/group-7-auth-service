@@ -31,21 +31,11 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build auth-service
-        working-directory: group-7-auth-service/auth-service
+        working-directory: auth-service
         run: ./mvnw clean package -DskipTests
 
       - name: Build & Push auth-service image
-        working-directory: group-7-auth-service/auth-service
+        working-directory: auth-service
         run: |
           docker build -t ghcr.io/${{ github.repository }}/auth-service:latest .
           docker push ghcr.io/${{ github.repository }}/auth-service:latest
-
-      - name: Build user-service
-        working-directory: group-7-user-service/user-service
-        run: ./mvnw clean package -DskipTests
-
-      - name: Build & Push user-service image
-        working-directory: group-7-user-service/user-service
-        run: |
-          docker build -t ghcr.io/${{ github.repository }}/user-service:latest .
-          docker push ghcr.io/${{ github.repository }}/user-service:latest
