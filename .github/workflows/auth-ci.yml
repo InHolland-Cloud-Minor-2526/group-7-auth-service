@@ -39,6 +39,12 @@ jobs:
         run: |
           docker build -t ghcr.io/inholland-cloud-minor-2526/group-7-auth-service/auth-service:latest .
           docker push ghcr.io/inholland-cloud-minor-2526/group-7-auth-service/auth-service:latest
+      - name: Install OpenShift CLI (oc)
+        run: |
+          curl -L https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz -o oc.tar.gz
+          tar -xzf oc.tar.gz
+          sudo mv oc /usr/local/bin/
+          oc version
 
       - name: Login to OpenShift
         run: |
