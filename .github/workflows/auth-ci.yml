@@ -39,3 +39,16 @@ jobs:
         run: |
           docker build -t ghcr.io/inholland-cloud-minor-2526/group-7-auth-service/auth-service:latest .
           docker push ghcr.io/inholland-cloud-minor-2526/group-7-auth-service/auth-service:latest
+
+      - name: Login to OpenShift
+        run: |
+          oc login ${{ secrets.OPENSHIFT_SERVER }} \
+            --token=${{ secrets.OPENSHIFT_TOKEN }} \
+            --insecure-skip-tls-verify=true
+
+      - name: Deploy to OpenShift
+        run: |
+          oc project ${{ secrets.OPENSHIFT_NAMESPACE }}
+          oc apply -f k8s/
+      - name: Force rollout
+        run: oc rollout restart deployment auth-service
