@@ -59,7 +59,9 @@ jobs:
       - name: Apply Kubernetes manifests
         run: |
           oc project ${{ secrets.OPENSHIFT_NAMESPACE }}
-          oc apply -f k8s/
+          ooc apply -f k8s/postgres/
+          oc apply -f k8s/rabbitmq/
+          oc apply -f k8s/auth-service/
 
       - name: Deploy new auth-service image
         run: |
