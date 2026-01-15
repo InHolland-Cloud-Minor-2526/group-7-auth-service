@@ -34,7 +34,7 @@ spec:
               value: rabbitmq
             - name: RABBITMQ_PORT
               value: "5672"
-              
+
             - name: RABBITMQ_USERNAME
               valueFrom:
                 secretKeyRef:
@@ -45,3 +45,13 @@ spec:
                 secretKeyRef:
                   name: rabbitmq-secret
                   key: RABBITMQ_PASSWORD
+            - name: JWT_PUBLIC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-secret
+                  key: JWT_PUBLIC_KEY
+            - name: JWT_PRIVATE_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: jwt-signing-secret
+                  key: JWT_PRIVATE_KEY
