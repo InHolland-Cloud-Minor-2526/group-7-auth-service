@@ -75,7 +75,7 @@ public class AuthHandler {
     @Transactional
     public void updateToken(Long userId, String accessToken, String refreshToken) {
         int updated = em.createQuery(
-                "UPDATE User u SET u.accessToken = :accessToken, u.refreshToken = :refreshToken WHERE u.userId = :userId")
+                "UPDATE User u SET u.access_token = :accessToken, u.refresh_token = :refresh_token WHERE u.user_id = :userId")
                 .setParameter("accessToken", accessToken)
                 .setParameter("refreshToken", refreshToken)
                 .setParameter("userId", userId)
@@ -89,7 +89,7 @@ public class AuthHandler {
     public String getNewAccessTokenWithRefreshToken(String refreshToken) {
         try {
             User user = em.createQuery(
-                    "SELECT u FROM User u WHERE u.refreshToken = :refreshToken",
+                    "SELECT u FROM User u WHERE u.refresh_token = :refreshToken",
                     User.class)
                     .setParameter("refreshToken", refreshToken)
                     .getSingleResult();
