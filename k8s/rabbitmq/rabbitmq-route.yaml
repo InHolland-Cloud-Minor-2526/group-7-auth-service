@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: rabbitmq-ui
+spec:
+  to:
+    kind: Service
+    name: rabbitmq
+  port:
+    targetPort: management
+  tls:
+    termination: edge

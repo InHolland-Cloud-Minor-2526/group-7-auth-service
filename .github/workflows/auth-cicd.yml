@@ -1,4 +1,4 @@
-name: Build & Push Quarkus Services to GHCR
+name: Build, Push & Deploy auth-service
 
 on:
   push:
@@ -6,12 +6,15 @@ on:
       - user-registration
 
 jobs:
-  build-and-push:
+  build-push-deploy:
     runs-on: ubuntu-latest
 
     permissions:
       contents: read
-      packages: write  
+      packages: write
+
+    env:
+      IMAGE_NAME: ghcr.io/inholland-cloud-minor-2526/group-7-auth-service/auth-service
 
     steps:
       - name: Checkout code
@@ -23,6 +26,10 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Build auth-service
+        working-directory: auth-service
+        run: ./mvnw clean package -DskipTests
+
       - name: Login to GHCR
         uses: docker/login-action@v3
         with:
@@ -30,20 +37,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build auth-service
-        working-directory: auth-service
-        run: ./mvnw clean package -DskipTests
-
-      - name: Build & Push auth-service image
+      - name: Build & Push Docker image
         working-directory: auth-service
         run: |
-          docker build -t ghcr.io/inholland-cloud-minor-2526/group-7-auth-service/auth-service:latest .
-          docker push ghcr.io/inholland-cloud-minor-2526/group-7-auth-service/auth-service:latest
-      - name: Install OpenShift CLI (oc)
+          docker build -t $IMAGE_NAME:${{ github.sha }} .
+          docker push $IMAGE_NAME:${{ github.sha }}
+
+      - name: Install OpenShift CLI
         run: |
           curl -L https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz -o oc.tar.gz
           tar -xzf oc.tar.gz
-          sudo mv oc /usr/local/bin/
+          sudo mv oc /usr/local/bin/oc
           oc version
 
       - name: Login to OpenShift
@@ -52,9 +56,12 @@ jobs:
             --token=${{ secrets.OPENSHIFT_TOKEN }} \
             --insecure-skip-tls-verify=true
 
-      - name: Deploy to OpenShift
+      - name: Apply Kubernetes manifests
         run: |
           oc project ${{ secrets.OPENSHIFT_NAMESPACE }}
           oc apply -f k8s/
-      - name: Force rollout
-        run: oc rollout restart deployment auth-service
+
+      - name: Deploy new auth-service image
+        run: |
+          oc set image deployment/auth-service \
+            auth-service=$IMAGE_NAME:${{ github.sha }}

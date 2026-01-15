@@ -22,7 +22,7 @@ public class JwtUtil {
         return Jwt.issuer("expense-auth-service")
                 .upn(String.valueOf(userId))
                 .claim("type", "access")
-                .expiresIn(Duration.ofMinutes(15))
+                .expiresIn(Duration.ofDays(15))
                 .sign();
     }
 

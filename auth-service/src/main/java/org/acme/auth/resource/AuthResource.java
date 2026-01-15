@@ -10,6 +10,7 @@ import org.acme.customExceptions.CustomAuthException;
 
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
+import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
@@ -36,9 +37,9 @@ public class AuthResource {
             String accessToken = jwtUtil.generateAccessToken(userId);
             String refreshToken = jwtUtil.generateRefreshToken(userId);
             authService.updateToken(userId, accessToken, refreshToken);
-            
+
             return Response.ok(
-                new LoginResponse(accessToken, refreshToken)).build();
+                    new LoginResponse(accessToken, refreshToken)).build();
 
         } catch (CustomAuthException e) {
             return Response
@@ -57,6 +58,14 @@ public class AuthResource {
 
         return Response.status(Response.Status.CREATED)
                 .entity(tokens)
+                .build();
+    }
+
+    @GET
+    @Path("/hi")
+    public Response hi() {
+
+        return Response.status(Response.Status.OK)
                 .build();
     }
 
