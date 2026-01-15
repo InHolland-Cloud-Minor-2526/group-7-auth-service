@@ -18,7 +18,6 @@ spec:
           ports:
             - containerPort: 8080
           env:
-            # --- DATABASE ---
             - name: QUARKUS_DATASOURCE_JDBC_URL
               value: jdbc:postgresql://auth-postgres:5432/auth_db
             - name: QUARKUS_DATASOURCE_USERNAME
@@ -35,6 +34,7 @@ spec:
               value: rabbitmq
             - name: RABBITMQ_PORT
               value: "5672"
+              
             - name: RABBITMQ_USERNAME
               valueFrom:
                 secretKeyRef:

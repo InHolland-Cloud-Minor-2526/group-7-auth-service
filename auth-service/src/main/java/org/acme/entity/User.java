@@ -23,8 +23,8 @@ public class User {
     public String password;
 
     @Column(length = 2048)
-    public String accessToken;
+    public String access_token;
 
     @Column(length = 2048)
-    public String refreshToken;
+    public String refresh_token;
 }

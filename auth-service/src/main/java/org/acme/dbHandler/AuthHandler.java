@@ -66,8 +66,8 @@ public class AuthHandler {
     }
 
     private RegistrationResponseDTO insertTokens(User user, String accessToken, String refreshToken) {
-        user.accessToken = BcryptUtil.bcryptHash(accessToken);
-        user.refreshToken = BcryptUtil.bcryptHash(refreshToken);
+        user.access_token = BcryptUtil.bcryptHash(accessToken);
+        user.refresh_token = BcryptUtil.bcryptHash(refreshToken);
         em.flush();
         return new RegistrationResponseDTO(accessToken, refreshToken, user.userId);
     }
