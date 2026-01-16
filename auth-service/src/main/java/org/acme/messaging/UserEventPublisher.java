@@ -16,7 +16,7 @@ public class UserEventPublisher {
 
     public void publishUserRegistered(Long userId) {
 
-        System.out.println("EVENT RECEIVED IN USER SERVICE" + userId );
+        System.out.println("Event" + userId );
         UserRegisteredEvent event = new UserRegisteredEvent(userId);
         emitter.send(event);
     }

@@ -1,5 +1,4 @@
-package org.acme.entity;
-
+package org.acme.auth.entity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -23,8 +22,8 @@ public class User {
     public String password;
 
     @Column(length = 2048)
-    public String access_token;
+    public String hashed_access_token;
 
     @Column(length = 2048)
-    public String refresh_token;
+    public String hashed_refresh_token;
 }

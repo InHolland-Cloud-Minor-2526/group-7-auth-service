@@ -1,11 +1,14 @@
 package org.acme.auth.services;
 
+import org.acme.auth.customExceptions.FailedToUpdateTokens;
+import org.acme.auth.customExceptions.InvalidCredential;
+import org.acme.auth.customExceptions.RegistrationFailedException;
+import org.acme.auth.customExceptions.UserExistsException;
 import org.acme.auth.dto.LoginRequest;
 import org.acme.auth.dto.RegistrationDTO;
 import org.acme.auth.dto.RegistrationResponseDTO;
-import org.acme.customExceptions.CustomAuthException;
-import org.acme.dbHandler.AuthHandler;
-import org.acme.entity.User;
+import org.acme.auth.entity.User;
+import org.acme.auth.repository.AuthHandler;
 import org.acme.messaging.UserEventPublisher;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
@@ -20,33 +23,43 @@ public class AuthService {
     @Inject
     UserEventPublisher userEventPublisher;
 
-    public Long validateUser(LoginRequest request) throws CustomAuthException {
-
-        if (request.email == null || request.password == null) {
-            throw new CustomAuthException("Password and Email should not be empty");
+    public User validateUser(LoginRequest request) {
+        User user = authHandler.findUserByEmail(request.email);
+        if (user == null || !BcryptUtil.matches(request.password, user.password)) {
+            throw new InvalidCredential();
         }
-
-        User user = authHandler.findUser(request.email);
-
-        if (user.userId == null || !BcryptUtil.matches(request.password, user.password)) {
-            throw new CustomAuthException("Invalid credentials");
-        }
-
-        return user.userId;
+        return user;
     }
 
-    public void updateToken(Long userId, String accessToken, String refreshToken) throws CustomAuthException {
+    public void updateToken(Long userId, String hashedAccessToken, String hashedRefreshToken) {
         try {
-            authHandler.updateToken(userId, accessToken, refreshToken);
+            authHandler.updateTokens(userId, hashedAccessToken, hashedRefreshToken);
         } catch (Exception e) {
-            throw new CustomAuthException(e.getMessage());
+            throw new FailedToUpdateTokens();
         }
     }
 
-    public RegistrationResponseDTO createUser(RegistrationDTO dto) {
-        RegistrationResponseDTO response = authHandler.createUser(dto);
-        userEventPublisher.publishUserRegistered(response.userId);
-        return response;
+    public RegistrationResponseDTO registerUser(RegistrationDTO dto) {
+
+        if (authHandler.findUserByEmail(dto.email) != null) {
+            throw new UserExistsException();
+        }
+
+        try {
+            RegistrationResponseDTO registrationResponseDTO = authHandler.registerUser(dto);
+            userEventPublisher.publishUserRegistered(registrationResponseDTO.userId);
+            return registrationResponseDTO;
+
+        } catch (Exception e) {
+            throw new RegistrationFailedException();
+        }
     }
 
+    public String getNewAccessTokenWithRefreshToken(String refreshToken) {
+        // try {
+            return authHandler.getNewAccessTokenWithRefreshToken(refreshToken);
+        // } catch (Exception e) {
+        //     throw new NewAccessTokenGeneration();
+        // }
+    }
 }
