@@ -21,7 +21,7 @@ spec:
     spec:
       containers:
         - name: auth-service
-          image: ghcr.io/inholland-cloud-minor-2526/group7-auth-service:latest
+          image: ghcr.io/inholland-cloud-minor-2526/group-7-auth-service/auth-service:latest
           ports:
             - containerPort: 8080
           resources:
