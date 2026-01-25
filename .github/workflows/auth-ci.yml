@@ -1,4 +1,4 @@
-name: Build and push auth service
+name: Build and push auth-service and update GitOps
 
 on:
   push:
