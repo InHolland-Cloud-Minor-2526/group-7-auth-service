@@ -18,6 +18,7 @@ jobs:
       GITOPS_REPO: InHolland-Cloud-Minor-2526/group-7-gitops
       GITOPS_BRANCH: main
       DEPLOYMENT_FILE: k8s/auth-service/auth-deployment.yaml
+      TOKEN: ${{ secrets.PAT }}
 
     steps:
       # Checkout auth-service code
@@ -45,7 +46,7 @@ jobs:
         with:
           repository: ${{ env.GITOPS_REPO }}
           ref: ${{ env.GITOPS_BRANCH }}
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PAT }}
           path: group-7-gitops
 
       # Update image tag only for auth-service
