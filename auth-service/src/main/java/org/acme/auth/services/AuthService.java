@@ -56,10 +56,6 @@ public class AuthService {
     }
 
     public String getNewAccessTokenWithRefreshToken(String refreshToken) {
-        // try {
-            return authHandler.getNewAccessTokenWithRefreshToken(refreshToken);
-        // } catch (Exception e) {
-        //     throw new NewAccessTokenGeneration();
-        // }
+        return authHandler.getNewAccessTokenWithRefreshToken(refreshToken);
     }
 }
