@@ -39,18 +39,16 @@ public class AuthHandler {
     private RegistrationResponseDTO saveTokens(User user) {
         String accessToken = jwtUtil.generateAccessToken(user.userId);
         String refreshToken = jwtUtil.generateRefreshToken(user.userId);
-        user.hashed_access_token = BcryptUtil.bcryptHash(accessToken);
         user.hashed_refresh_token = BcryptUtil.bcryptHash(refreshToken);
         return new RegistrationResponseDTO(accessToken, refreshToken, user.userId);
     }
 
     @Transactional
-    public void updateTokens(Long userId, String hashedAccessToken, String hashedRefreshToken) {
+    public void updateRefreshToken(Long userId,String hashedRefreshToken) {
         User user = em.find(User.class, userId);
         if (user == null) {
             throw new NoResultException("User not found");
         }
-        user.hashed_access_token = hashedAccessToken;
         user.hashed_refresh_token = hashedRefreshToken;
         em.flush();
     }

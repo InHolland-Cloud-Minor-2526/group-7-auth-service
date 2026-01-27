@@ -5,10 +5,12 @@ import org.acme.auth.customExceptions.InvalidCredential;
 import org.acme.auth.customExceptions.RegistrationFailedException;
 import org.acme.auth.customExceptions.UserExistsException;
 import org.acme.auth.dto.LoginRequest;
+import org.acme.auth.dto.LoginResponse;
 import org.acme.auth.dto.RegistrationDTO;
 import org.acme.auth.dto.RegistrationResponseDTO;
 import org.acme.auth.entity.User;
 import org.acme.auth.repository.AuthHandler;
+import org.acme.auth.utils.JwtUtil;
 import org.acme.messaging.UserEventPublisher;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
@@ -22,6 +24,10 @@ public class AuthService {
     AuthHandler authHandler;
     @Inject
     UserEventPublisher userEventPublisher;
+    @Inject
+    AccessTokenService tokenCacheService;
+    @Inject
+    JwtUtil jwtUtil;
 
     public User validateUser(LoginRequest request) {
         User user = authHandler.findUserByEmail(request.email);
@@ -31,9 +37,25 @@ public class AuthService {
         return user;
     }
 
-    public void updateToken(Long userId, String hashedAccessToken, String hashedRefreshToken) {
+    public LoginResponse generateTokens(LoginRequest request) {
         try {
-            authHandler.updateTokens(userId, hashedAccessToken, hashedRefreshToken);
+            User user = validateUser(request);
+
+            String accessToken = jwtUtil.generateAccessToken(user.userId);
+            String refreshToken = jwtUtil.generateRefreshToken(user.userId);
+            // check if the access token already exists in redis if so delete it an store the new one
+            //
+            tokenCacheService.storeAccessToken(
+                    user.userId,
+                    accessToken,
+                    jwtUtil.getAccessTokenTtlSeconds()
+            );
+            authHandler.updateRefreshToken(
+                    user.userId,
+                    BcryptUtil.bcryptHash(refreshToken)
+            );
+
+            return new LoginResponse(accessToken, refreshToken);
         } catch (Exception e) {
             throw new FailedToUpdateTokens();
         }
@@ -47,6 +69,13 @@ public class AuthService {
 
         try {
             RegistrationResponseDTO registrationResponseDTO = authHandler.registerUser(dto);
+            // Store access token in Redis (TTL = JWT expiry)
+            tokenCacheService.storeAccessToken(
+                    registrationResponseDTO.userId,
+                    registrationResponseDTO.accessToken,
+                    jwtUtil.getAccessTokenTtlSeconds()
+            );
+
             userEventPublisher.publishUserRegistered(registrationResponseDTO.userId);
             return registrationResponseDTO;
 

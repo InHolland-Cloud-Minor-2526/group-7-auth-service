@@ -1,4 +1,4 @@
-name: Build and push auth-service and update GitOps
+name: Build and push to ghcr
 
 on:
   push:
@@ -10,18 +10,13 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write
+      contents: read
       packages: write
 
     env:
       IMAGE_NAME: ghcr.io/inholland-cloud-minor-2526/group-7-auth-service/auth-service
-      GITOPS_REPO: InHolland-Cloud-Minor-2526/group-7-gitops
-      GITOPS_BRANCH: main
-      DEPLOYMENT_FILE: k8s/auth-service/auth-deployment.yaml
-      TOKEN: ${{ secrets.PAT }}
-
+   
     steps:
-      # Checkout auth-service code
       - name: Checkout auth-service repo
         uses: actions/checkout@v4
 
@@ -33,34 +28,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      # Build and push docker image
       - name: Build & push Docker image
         working-directory: auth-service
         run: |
           docker build -t $IMAGE_NAME:${{ github.sha }} .
           docker push $IMAGE_NAME:${{ github.sha }}
 
-      # Checkout gitops repo
-      - name: Checkout GitOps repo
-        uses: actions/checkout@v4
-        with:
-          repository: ${{ env.GITOPS_REPO }}
-          ref: ${{ env.GITOPS_BRANCH }}
-          token: ${{ secrets.PAT }}
-          path: group-7-gitops
-
-      # Update image tag only for auth-service
-      - name: Update image in GitOps repo
-        run: |
-          sed -i "s|image: .*|image: $IMAGE_NAME:${{ github.sha }}|" \
-            group-7-gitops/${{ env.DEPLOYMENT_FILE }}
-
-      # Commit and push change
-      - name: Commit & push GitOps change
-        run: |
-          cd group-7-gitops
-          git config user.name "MTKabir"
-          git config user.email "tasnimkabirmd@gmail.com"
-          git add ${{ env.DEPLOYMENT_FILE }}
-          git commit -m "chore(auth-service): update image to ${{ github.sha }}"
-          git push origin main

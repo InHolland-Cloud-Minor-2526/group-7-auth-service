@@ -5,11 +5,8 @@ import org.acme.auth.dto.LoginResponse;
 import org.acme.auth.dto.RefreshTokenRequestDTO;
 import org.acme.auth.dto.RefreshTokenResponseDTO;
 import org.acme.auth.dto.RegistrationDTO;
-import org.acme.auth.entity.User;
 import org.acme.auth.services.AuthService;
-import org.acme.auth.utils.JwtUtil;
 
-import io.quarkus.elytron.security.common.BcryptUtil;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;
 import jakarta.ws.rs.Consumes;
@@ -25,9 +22,6 @@ import jakarta.ws.rs.core.Response;
 public class AuthController {
 
     @Inject
-    JwtUtil jwtUtil;
-
-    @Inject
     AuthService authService;
 
     @POST
@@ -38,14 +32,9 @@ public class AuthController {
                     .entity("Request body is required")
                     .build();
         }
-        User user = authService.validateUser(request);
-
-        String accessToken = jwtUtil.generateAccessToken(user.userId);
-        String refreshToken = jwtUtil.generateRefreshToken(user.userId);
-        authService.updateToken(user.userId, BcryptUtil.bcryptHash(accessToken), BcryptUtil.bcryptHash(refreshToken));
-
+        LoginResponse loginResponse = authService.generateTokens(request);
         return Response.status(Response.Status.OK)
-                .entity(new LoginResponse(accessToken, refreshToken))
+                .entity(loginResponse)
                 .build();
     }
 
