@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-password-service
+  labels:
+    app: auth-password-service
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: auth-password-service
+  template:
+    metadata:
+      labels:
+        app: auth-password-service
+    spec:
+      containers:
+        - name: auth-password-service
+          image: image-registry.openshift-image-registry.svc:5000/group-7-felix/auth-password-service:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          envFrom:
+            - configMapRef:
+                name: auth-password-service-config
+            - secretRef:
+                name: auth-password-service-secret
