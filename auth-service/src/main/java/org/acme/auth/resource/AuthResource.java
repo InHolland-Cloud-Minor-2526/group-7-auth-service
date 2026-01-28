@@ -53,30 +53,27 @@ public class AuthResource {
 
     @POST
     @Path("/forgot-password")
-    public Response forgotPassword(ForgotPasswordRequest request) {
-        if (request == null || request.email == null || request.email.isBlank()) {
-            return Response.status(Response.Status.BAD_REQUEST)
+        public Response forgotPassword(ForgotPasswordRequest request) {
+            if (request == null || request.email == null || request.email.isBlank()) {
+                return Response.status(Response.Status.BAD_REQUEST)
                     .entity("email is required")
                     .build();
-        }
+            }
 
-        // Generic message to avoid user enumeration
-        String message = "If the account exists, a password reset token has been generated.";
+        // Always generic to prevent user enumeration
+        String message = "If the account exists, a password reset message has been sent.";
 
         var issued = passwordResetService.issueResetTokenByEmail(request.email);
 
-        // return token 
+        // If user exists -> send via email (or log in dev)
         if (issued != null) {
-            return Response.ok(
-                    new ForgotPasswordResponse(
-                            message,
-                            issued.rawToken
-                    )
-            ).build();
+            emailService.sendPasswordReset(issued.email, issued.rawToken);
         }
 
+        // Never return token in response
         return Response.ok(new ForgotPasswordResponse(message, null)).build();
     }
+
 
     @POST
     @Path("/reset-password")
