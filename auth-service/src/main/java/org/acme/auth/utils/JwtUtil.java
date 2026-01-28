@@ -18,6 +18,7 @@ public class JwtUtil {
         return Jwt.issuer("expense-auth-service")
                 .upn(String.valueOf(userId))
                 .claim("type", "access")
+                .claim("jti", UUID.randomUUID().toString())
                 .expiresIn(Duration.ofMinutes(15))
                 .sign();
     }
