@@ -31,7 +31,7 @@ spec:
               valueFrom:
                 secretKeyRef:
                   name: auth-db-secret
-                  key: jdbc-uri
+                  key: jdbc:postgresql://auth-db:5432/db
 
             - name: QUARKUS_DATASOURCE_USERNAME
               valueFrom:
