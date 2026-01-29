@@ -6,6 +6,5 @@ spec:
   selector:
     app: auth-password-service
   ports:
-    - name: http
-      port: 80
-      targetPort: http
+    - port: 80
+      targetPort: 8080

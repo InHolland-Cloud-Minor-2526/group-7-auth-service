@@ -2,8 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-password-service
-  labels:
-    app: auth-password-service
 spec:
   replicas: 1
   selector:
@@ -19,10 +17,30 @@ spec:
           image: image-registry.openshift-image-registry.svc:5000/group-7-felix/auth-password-service:latest
           imagePullPolicy: Always
           ports:
-            - name: http
-              containerPort: 8080
+            - containerPort: 8080
+
           envFrom:
             - configMapRef:
                 name: auth-password-service-config
-            - secretRef:
-                name: auth-password-service-secret
+
+          env:
+            - name: QUARKUS_DATASOURCE_DB_KIND
+              value: postgresql
+
+            - name: QUARKUS_DATASOURCE_JDBC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: auth-db-app
+                  key: jdbc-uri
+
+            - name: QUARKUS_DATASOURCE_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: auth-db-app
+                  key: username
+
+            - name: QUARKUS_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: auth-db-app
+                  key: password

@@ -7,6 +7,6 @@ spec:
     kind: Service
     name: auth-password-service
   port:
-    targetPort: http
+    targetPort: 80
   tls:
     termination: edge

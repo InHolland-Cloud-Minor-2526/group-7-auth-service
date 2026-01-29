@@ -4,11 +4,6 @@ metadata:
   name: auth-password-service-config
 data:
   QUARKUS_PROFILE: prod
-
   APP_MAIL_ENABLED: "false"
   APP_RESET_DEV_LOG_TOKEN: "true"
   APP_RESET_FRONTEND_URL: ""
-
-  QUARKUS_DATASOURCE_DB_KIND: postgresql
-  QUARKUS_DATASOURCE_JDBC_URL: jdbc:postgresql://auth-db-app:5432/db
-  QUARKUS_DATASOURCE_USERNAME: user
