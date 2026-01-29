@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: auth-password-service
+spec:
+  to:
+    kind: Service
+    name: auth-password-service
+  port:
+    targetPort: 80
+  tls:
+    termination: edge

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: auth-password-service-config
+data:
+  QUARKUS_PROFILE: prod
+  APP_MAIL_ENABLED: "false"
+  APP_RESET_DEV_LOG_TOKEN: "true"
+  APP_RESET_FRONTEND_URL: ""
