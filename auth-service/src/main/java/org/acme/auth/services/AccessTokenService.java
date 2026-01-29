@@ -1,6 +1,7 @@
 package org.acme.auth.services;
 
-import io.quarkus.elytron.security.common.BcryptUtil;
+import org.acme.auth.utils.TokenHash;
+
 import io.quarkus.redis.client.RedisClient;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -10,10 +11,12 @@ public class AccessTokenService {
 
     @Inject
     RedisClient redis;
+    @Inject
+    TokenHash tokenHash;
     
     public void storeAccessToken(Long userId, String accessToken, long ttlSeconds) {
-        String key = "userId : " + userId;
-        String hashedAccessToken = BcryptUtil.bcryptHash(accessToken);
+        String key = "userId:" + userId;
+        String hashedAccessToken = tokenHash.sha256(accessToken);
         redis.setex(key, String.valueOf(ttlSeconds), hashedAccessToken);
 
     }

@@ -10,6 +10,7 @@ import org.acme.auth.dto.RegistrationDTO;
 import org.acme.auth.dto.RegistrationResponseDTO;
 import org.acme.auth.entity.User;
 import org.acme.auth.repository.AuthHandler;
+import org.acme.auth.utils.TokenHash;
 import org.acme.auth.utils.JwtUtil;
 import org.acme.messaging.UserEventPublisher;
 
@@ -28,6 +29,8 @@ public class AuthService {
     AccessTokenService tokenCacheService;
     @Inject
     JwtUtil jwtUtil;
+    @Inject
+    TokenHash tokenHash;
 
     public User validateUser(LoginRequest request) {
         User user = authHandler.findUserByEmail(request.email);
@@ -43,6 +46,8 @@ public class AuthService {
 
             String accessToken = jwtUtil.generateAccessToken(user.userId);
             String refreshToken = jwtUtil.generateRefreshToken(user.userId);
+            String hashedAccessToken = tokenHash.sha256(accessToken);
+
             // check if the access token already exists in redis if so delete it an store the new one
             //
             tokenCacheService.storeAccessToken(
@@ -52,7 +57,7 @@ public class AuthService {
             );
             authHandler.updateRefreshToken(
                     user.userId,
-                    BcryptUtil.bcryptHash(refreshToken)
+                    hashedAccessToken
             );
 
             return new LoginResponse(accessToken, refreshToken);
