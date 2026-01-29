@@ -30,17 +30,17 @@ spec:
             - name: QUARKUS_DATASOURCE_JDBC_URL
               valueFrom:
                 secretKeyRef:
-                  name: auth-db-app
+                  name: auth-db-secret
                   key: jdbc-uri
 
             - name: QUARKUS_DATASOURCE_USERNAME
               valueFrom:
                 secretKeyRef:
-                  name: auth-db-app
+                  name: auth-db-secret
                   key: username
 
             - name: QUARKUS_DATASOURCE_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: auth-db-app
+                  name: auth-db-secret
                   key: password
