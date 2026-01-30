@@ -1,37 +1,94 @@
 package org.acme.auth.services;
 
-import jakarta.inject.Inject;
-
-import jakarta.enterprise.context.ApplicationScoped;
+import org.acme.auth.customExceptions.InvalidCredential;
+import org.acme.auth.customExceptions.RegistrationFailedException;
+import org.acme.auth.customExceptions.UserExistsException;
 import org.acme.auth.dto.LoginRequest;
-import org.acme.dbHandler.AuthHandler;
-import org.acme.customExceptions.CustomAuthException;
+import org.acme.auth.dto.LoginResponse;
+import org.acme.auth.dto.RegistrationDTO;
+import org.acme.auth.dto.RegistrationResponseDTO;
+import org.acme.auth.entity.User;
+import org.acme.auth.repository.AuthHandler;
+import org.acme.auth.utils.JwtUtil;
+import org.acme.auth.utils.TokenHash;
+import org.acme.messaging.UserEventPublisher;
+
+import io.quarkus.elytron.security.common.BcryptUtil;
+import jakarta.enterprise.context.ApplicationScoped;
+import jakarta.inject.Inject;
 
 @ApplicationScoped
 public class AuthService {
 
     @Inject
     AuthHandler authHandler;
+    @Inject
+    UserEventPublisher userEventPublisher;
+    @Inject
+    AccessTokenService tokenCacheService;
+    @Inject
+    JwtUtil jwtUtil;
+    @Inject
+    TokenHash tokenHash;
 
-    public Long validateUser(LoginRequest request) throws CustomAuthException {
-        if (request.email == null || request.password == null) {
-            throw new CustomAuthException("Password and Email should not be empty");
+    public User validateUser(LoginRequest request) {
+        User user = authHandler.findUserByEmail(request.email);
+        if (user == null || !BcryptUtil.matches(request.password, user.password)) {
+            throw new InvalidCredential();
         }
-
-        Long userId = authHandler.findUser(request.email, request.password);
-
-        if (userId == null) {
-            throw new CustomAuthException("User was not found");
-        }
-
-        return userId;
+        return user;
     }
 
-    public void updateToken(Long userId, String token) throws CustomAuthException {
+    public LoginResponse generateTokens(LoginRequest request) {
         try {
-            authHandler.updateToken(userId, token);
+            User user = validateUser(request);
+
+            String accessToken = jwtUtil.generateAccessToken(user.userId);
+            String refreshToken = jwtUtil.generateRefreshToken(user.userId);
+            String hashedAccessToken = tokenHash.sha256(accessToken);
+
+            // check if the access token already exists in redis if so delete it an store the new one
+            //
+            tokenCacheService.storeAccessToken(
+                    user.userId,
+                    accessToken,
+                    jwtUtil.getAccessTokenTtlSeconds()
+            );
+            authHandler.updateRefreshToken(
+                    user.userId,
+                    hashedAccessToken
+            );
+
+            return new LoginResponse(accessToken, refreshToken);
         } catch (Exception e) {
-            throw new CustomAuthException(e.getMessage());
+            throw new InvalidCredential();
         }
+    }
+
+    public RegistrationResponseDTO registerUser(RegistrationDTO dto) {
+
+        if (authHandler.findUserByEmail(dto.email) != null) {
+            throw new UserExistsException();
+        }
+
+        try {
+            RegistrationResponseDTO registrationResponseDTO = authHandler.registerUser(dto);
+            // Store access token in Redis (TTL = JWT expiry)
+            tokenCacheService.storeAccessToken(
+                    registrationResponseDTO.userId,
+                    registrationResponseDTO.accessToken,
+                    jwtUtil.getAccessTokenTtlSeconds()
+            );
+
+            userEventPublisher.publishUserRegistered(registrationResponseDTO.userId);
+            return registrationResponseDTO;
+
+        } catch (Exception e) {
+            throw new RegistrationFailedException();
+        }
+    }
+
+    public String getNewAccessTokenWithRefreshToken(String refreshToken) {
+        return authHandler.getNewAccessTokenWithRefreshToken(refreshToken);
     }
 }
