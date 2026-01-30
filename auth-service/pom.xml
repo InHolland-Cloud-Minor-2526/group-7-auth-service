@@ -129,6 +129,7 @@
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-redis-client</artifactId>
         </dependency>
+    
     </dependencies>
 
     <build>

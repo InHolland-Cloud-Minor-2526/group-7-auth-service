@@ -1,6 +1,5 @@
 package org.acme.auth.services;
 
-import org.acme.auth.customExceptions.FailedToUpdateTokens;
 import org.acme.auth.customExceptions.InvalidCredential;
 import org.acme.auth.customExceptions.RegistrationFailedException;
 import org.acme.auth.customExceptions.UserExistsException;
@@ -10,8 +9,8 @@ import org.acme.auth.dto.RegistrationDTO;
 import org.acme.auth.dto.RegistrationResponseDTO;
 import org.acme.auth.entity.User;
 import org.acme.auth.repository.AuthHandler;
-import org.acme.auth.utils.TokenHash;
 import org.acme.auth.utils.JwtUtil;
+import org.acme.auth.utils.TokenHash;
 import org.acme.messaging.UserEventPublisher;
 
 import io.quarkus.elytron.security.common.BcryptUtil;
@@ -62,7 +61,7 @@ public class AuthService {
 
             return new LoginResponse(accessToken, refreshToken);
         } catch (Exception e) {
-            throw new FailedToUpdateTokens();
+            throw new InvalidCredential();
         }
     }
 
